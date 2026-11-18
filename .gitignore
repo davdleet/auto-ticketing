@@ -4,3 +4,5 @@
 /.idea
 /node_modules
 cookies.json
+# 159 MB archive, exceeds GitHub limit
+auto-ticketing.rar

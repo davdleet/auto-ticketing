@@ -1,3 +1,5 @@
+
+
 const puppeteer = require('puppeteer');
 const log = require('./js/log.js');
 
@@ -9,8 +11,8 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
 
     let page = await browser.newPage();
     await page.goto('https://ticket.interpark.com/Gate/TPLogin.asp');
-    
-    await page.setViewport({width: 1080, height: 1024});
+
+    await page.setViewport({ width: 1080, height: 1024 });
 
     await page.waitForSelector('iframe');
     const id = await page.$(
@@ -28,8 +30,8 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
     await frame.type(pwSelector, pwInput);
     page.keyboard.press('Enter');
     await log.addLog("로그인 성공");
-    
-    await page.waitForSelector('#DivMainPopup');
+
+    //await page.waitForSelector('#DivMainPopup');
 
     // save cookie
     const cookies = await page.cookies();
@@ -40,11 +42,11 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
     // consert
     let consertUrl = 'https://tickets.interpark.com/goods/' + consertId;
     await page.goto(consertUrl);
-    
+
     // if exsited popup -> close
     const popupCloseBut = '#popup-prdGuide > div > div.popupFooter > button'
     const closeButElement = await page.$(popupCloseBut);
-    if(closeButElement != null) {
+    if (closeButElement != null) {
         await page.click(popupCloseBut);
     }
 
@@ -56,11 +58,11 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
 
     const ticketSelector = '.stickyWrap';
     await page.waitForSelector(ticketSelector);
-    
+
     // 날짜
     let mutedDayLength = (await page.$$('.muted')).length;
     let dayCalculate = mutedDayLength + Number(day);
-    
+
     const daySelector = '#productSide > div > div.sideMain > div.sideContainer.containerTop.sideToggleWrap > div.sideContent.toggleCalendar > div > div > div > div > ul:nth-child(3) > li:nth-child(' + `${dayCalculate}` + ')';
     await page.waitForSelector(daySelector);
     page.click(daySelector);
@@ -77,7 +79,7 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
     page.click(buttonSelector);
     const newPagePromise = await new Promise(x => page.once('popup', x));
     await log.addLog("예매하기 버튼 클릭 성공");
-    await page.setViewport({width: 1080, height: 1024});
+    await page.setViewport({ width: 1080, height: 1024 });
     page = await newPagePromise;
 
     // 새창
@@ -85,7 +87,7 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
     let iframeWindow = await page.$(
         'iframe[id="ifrmSeat"]'
     );
-    
+
     frame = await iframeWindow.contentFrame();
 
     // 잠깐 접어두기 클릭
@@ -100,7 +102,7 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
         'iframe[id="ifrmSeatDetail"]'
     );
     let datailFrame = await iframeWindow.contentFrame();
-    
+
     // 직접 구역 누르고
     // GetBlockSeatList('', '', '016');
     // #TmgsTable > tbody > tr > td > map > area:nth-child(16)
@@ -108,10 +110,10 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
     // #divSeatBox 나오면 자동으로 좌석 클릭
     await datailFrame.waitForSelector('#divSeatBox');
     const seatArr = await datailFrame.$$('span[class="SeatN"]');
-    
+
     for (let index = 0; index < numberPerson; index++) {
-        if(index+1 > seatArr.length) {
-            log.addErrorLog("잔여좌석 " + seatArr.length + "개로 " + numberPerson-seatArr.length + "개의 좌석은 잡지 못했습니다.");
+        if (index + 1 > seatArr.length) {
+            log.addErrorLog("잔여좌석 " + seatArr.length + "개로 " + numberPerson - seatArr.length + "개의 좌석은 잡지 못했습니다.");
             break;
         }
         await seatArr[index].click();
@@ -126,12 +128,12 @@ async function startTicketing(consertId, numberPerson, day, userId, pw) {
 
     // 사용자가 수기로 문자열 입력
 
-    
+
     // await Promise.all([
     //     frame.click(arr[0]),
     //     frame.click(arr[1])
     // ]);
-    
+
     // frame.click(area의 title이 036영역);
 
     // 완료
